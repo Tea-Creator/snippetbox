@@ -36,7 +36,6 @@ func newApp() *app {
 }
 
 func (a *app) run() {
-	a.conf = startupConfig{}
 	a.conf.setup()
 
 	a.configureHandlers()
