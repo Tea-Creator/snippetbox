@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -38,11 +39,14 @@ func newApp() *app {
 func (a *app) run() {
 	a.conf.setup()
 
+	infoLogger := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLogger := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
 	a.configureHandlers()
 
-	log.Printf("Starting server on %s\n", a.conf.Address)
+	infoLogger.Printf("Starting server on %s", a.conf.Address)
 
-	log.Fatal(http.ListenAndServe(*&a.conf.Address, a.mux))
+	errorLogger.Fatal(http.ListenAndServe(*&a.conf.Address, a.mux))
 }
 
 func (a *app) configureHandlers() {
