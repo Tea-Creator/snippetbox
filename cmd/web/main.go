@@ -45,7 +45,7 @@ func (a *app) run() {
 	a.infoLogger = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	a.errorLogger = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	a.configureHandlers()
+	a.configureRoutes()
 
 	srv := &http.Server{
 		Addr:     a.conf.Address,
@@ -56,12 +56,4 @@ func (a *app) run() {
 	a.infoLogger.Printf("Starting server on %s", a.conf.Address)
 
 	a.infoLogger.Fatal(srv.ListenAndServe())
-}
-
-func (a *app) configureHandlers() {
-	a.mux.HandleFunc("/", a.home)
-	a.mux.HandleFunc("/snippet", a.showSnippet)
-	a.mux.HandleFunc("/snippet/create", a.createSnippet)
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	a.mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 }
