@@ -9,7 +9,7 @@ import (
 
 func (a *app) home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		a.notFound(w)
 		return
 	}
 
@@ -20,16 +20,14 @@ func (a *app) home(w http.ResponseWriter, r *http.Request) {
 	}...)
 
 	if err != nil {
-		a.errorLogger.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
+		a.internalError(w, err)
 		return
 	}
 
 	err = ts.Execute(w, nil)
 
 	if err != nil {
-		a.errorLogger.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
+		a.internalError(w, err)
 	}
 }
 
@@ -37,7 +35,7 @@ func (a *app) showSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 
 	if err != nil {
-		http.NotFound(w, r)
+		a.notFound(w)
 		return
 	}
 
@@ -47,7 +45,7 @@ func (a *app) showSnippet(w http.ResponseWriter, r *http.Request) {
 func (a *app) createSnippet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
-		http.Error(w, "Method Not Allowed", 405)
+		a.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
 
