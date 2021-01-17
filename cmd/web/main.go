@@ -25,6 +25,9 @@ func (conf *startupConfig) setup() {
 type app struct {
 	conf startupConfig
 	mux  *http.ServeMux
+
+	infoLogger  *log.Logger
+	errorLogger *log.Logger
 }
 
 func newApp() *app {
@@ -39,26 +42,26 @@ func newApp() *app {
 func (a *app) run() {
 	a.conf.setup()
 
-	infoLogger := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	errorLogger := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	a.infoLogger = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	a.errorLogger = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	a.configureHandlers()
 
 	srv := &http.Server{
 		Addr:     a.conf.Address,
-		ErrorLog: errorLogger,
+		ErrorLog: a.errorLogger,
 		Handler:  a.mux,
 	}
 
-	infoLogger.Printf("Starting server on %s", a.conf.Address)
+	a.infoLogger.Printf("Starting server on %s", a.conf.Address)
 
-	errorLogger.Fatal(srv.ListenAndServe())
+	a.infoLogger.Fatal(srv.ListenAndServe())
 }
 
 func (a *app) configureHandlers() {
-	a.mux.HandleFunc("/", home)
-	a.mux.HandleFunc("/snippet", showSnippet)
-	a.mux.HandleFunc("/snippet/create", createSnippet)
+	a.mux.HandleFunc("/", a.home)
+	a.mux.HandleFunc("/snippet", a.showSnippet)
+	a.mux.HandleFunc("/snippet/create", a.createSnippet)
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	a.mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 }
