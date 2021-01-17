@@ -18,6 +18,10 @@ func main() {
 	mux.HandleFunc("/snippet", showSnippet)
 	mux.HandleFunc("/snippet/create", createSnippet)
 
+	fileServer := http.FileServer(http.Dir("./ui/static/"))
+
+	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+
 	log.Printf("Starting server on :%d\n", Port)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", Port), mux))
