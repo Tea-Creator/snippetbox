@@ -44,9 +44,15 @@ func (a *app) run() {
 
 	a.configureHandlers()
 
+	srv := &http.Server{
+		Addr:     a.conf.Address,
+		ErrorLog: errorLogger,
+		Handler:  a.mux,
+	}
+
 	infoLogger.Printf("Starting server on %s", a.conf.Address)
 
-	errorLogger.Fatal(http.ListenAndServe(*&a.conf.Address, a.mux))
+	errorLogger.Fatal(srv.ListenAndServe())
 }
 
 func (a *app) configureHandlers() {
