@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Tea-Creator/snippetbox/pkg/models/postgres"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -17,7 +18,7 @@ type app struct {
 	cfg      appConfig
 	infoLog  *log.Logger
 	errorLog *log.Logger
-	db       *pgxpool.Pool
+	snippets *postgres.SnippetModel
 }
 
 func newApp() *app {
@@ -43,6 +44,8 @@ func (a *app) run() {
 
 	defer pool.Close()
 
+	a.snippets = &postgres.SnippetModel{DB: pool}
+
 	srv := &http.Server{
 		Addr:     a.cfg.addr,
 		ErrorLog: a.errorLog,
@@ -60,8 +63,6 @@ func (a *app) addPgxpool() (*pgxpool.Pool, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	a.db = pool
 
 	return pool, nil
 }
