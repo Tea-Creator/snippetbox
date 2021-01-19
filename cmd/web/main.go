@@ -31,8 +31,6 @@ func newApp() *app {
 }
 
 func (a *app) run() {
-	a.cfg.setup()
-
 	a.infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	a.errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
