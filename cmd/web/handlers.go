@@ -49,5 +49,12 @@ func (a *app) createSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("Create a new snippet"))
+	id, err := a.snippets.Insert("Carl", "Carl lived long time ago", "10")
+
+	if err != nil {
+		a.internalError(w, err)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther)
 }
