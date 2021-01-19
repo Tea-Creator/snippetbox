@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -16,21 +15,15 @@ func (a *app) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ts, err := template.ParseFiles([]string{
-		"./ui/html/home.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}...)
+	snippets, err := a.snippets.Latest()
 
 	if err != nil {
 		a.internalError(w, err)
 		return
 	}
 
-	err = ts.Execute(w, nil)
-
-	if err != nil {
-		a.internalError(w, err)
+	for _, s := range snippets {
+		fmt.Fprintf(w, "%v\n", s)
 	}
 }
 
