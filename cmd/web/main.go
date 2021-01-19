@@ -29,25 +29,18 @@ func newApp() *app {
 	return a
 }
 
-func (a *app) addPgxpool() *pgxpool.Pool {
-	pool, err := pgxpool.Connect(context.Background(), a.cfg.connString)
-
-	if err != nil {
-		a.errorLog.Fatal(err.Error())
-	}
-
-	a.db = pool
-
-	return pool
-}
-
 func (a *app) run() {
 	a.cfg.setup()
 
 	a.infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	a.errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	pool := a.addPgxpool()
+	pool, err := a.addPgxpool()
+
+	if err != nil {
+		a.errorLog.Fatalln(err.Error())
+	}
+
 	defer pool.Close()
 
 	srv := &http.Server{
@@ -59,4 +52,16 @@ func (a *app) run() {
 	a.infoLog.Printf("Starting server on %s", a.cfg.addr)
 
 	a.infoLog.Fatal(srv.ListenAndServe())
+}
+
+func (a *app) addPgxpool() (*pgxpool.Pool, error) {
+	pool, err := pgxpool.Connect(context.Background(), a.cfg.connString)
+
+	if err != nil {
+		return nil, err
+	}
+
+	a.db = pool
+
+	return pool, nil
 }
