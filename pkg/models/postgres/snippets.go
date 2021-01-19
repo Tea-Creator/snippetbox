@@ -35,11 +35,9 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 	stmt := `select id, title, content, created, expires from snippets
 	where expires > now() and id = $1`
 
-	row := m.DB.QueryRow(context.Background(), stmt, id)
-
 	s := &models.Snippet{}
 
-	err := row.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+	err := m.DB.QueryRow(context.Background(), stmt, id).Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
