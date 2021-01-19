@@ -2,10 +2,13 @@ package main
 
 import "net/http"
 
-func (a *app) configureRoutes() {
-	a.mux.HandleFunc("/", a.home)
-	a.mux.HandleFunc("/snippet", a.showSnippet)
-	a.mux.HandleFunc("/snippet/create", a.createSnippet)
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	a.mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+func (a *app) routes() *http.ServeMux {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", a.home)
+	mux.HandleFunc("/snippet", a.showSnippet)
+	mux.HandleFunc("/snippet/create", a.createSnippet)
+	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir(a.cfg.staticFiles))))
+
+	return mux
 }
