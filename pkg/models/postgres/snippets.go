@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"context"
+
 	"github.com/Tea-Creator/snippetbox/pkg/models"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -12,7 +14,19 @@ type SnippetModel struct {
 
 // Insert inserts a new record into db
 func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
-	return 0, nil
+
+	stmt := `insert into snippets(title, content, created, expires)
+	values ($1, $2, now(), now() + ($3 || ' days')::interval) returning id;`
+
+	id := 0
+
+	err := m.DB.QueryRow(context.Background(), stmt, title, content, expires).Scan(&id)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
 
 // Get returns snippet with specified id
