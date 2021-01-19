@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"github.com/Tea-Creator/snippetbox/pkg/models"
 )
 
 func (a *app) home(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +42,19 @@ func (a *app) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Specific snippet with ID %d", id)
+	s, err := a.snippets.Get(id)
+
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			a.notFound(w)
+			return
+		}
+
+		a.internalError(w, err)
+		return
+	}
+
+	fmt.Fprintf(w, "%v", s)
 }
 
 func (a *app) createSnippet(w http.ResponseWriter, r *http.Request) {

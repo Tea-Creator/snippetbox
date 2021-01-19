@@ -2,8 +2,10 @@ package postgres
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Tea-Creator/snippetbox/pkg/models"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -14,7 +16,6 @@ type SnippetModel struct {
 
 // Insert inserts a new record into db
 func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
-
 	stmt := `insert into snippets(title, content, created, expires)
 	values ($1, $2, now(), now() + ($3 || ' days')::interval) returning id;`
 
@@ -31,7 +32,24 @@ func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
 
 // Get returns snippet with specified id
 func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
-	return nil, nil
+	stmt := `select id, title, content, created, expires from snippets
+	where expires > now() and id = $1`
+
+	row := m.DB.QueryRow(context.Background(), stmt, id)
+
+	s := &models.Snippet{}
+
+	err := row.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+
+		return nil, err
+	}
+
+	return s, nil
 }
 
 // Latest returns 10 most recently created snippets
